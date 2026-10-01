@@ -1,0 +1,68 @@
+template:
+  path: "data/template.xlsx"
+  sheet_name: "Q2 2026"
+  header_row: 11
+  data_start_row: 12
+  data_end_row: 299
+  columns:
+    sr_no: "A"
+    phase_name: "B"
+    activity: "C"
+    checkpoint_text: "D"          # merged D:K — read from D (top-left of merge)
+    response_verdict: "L"         # verdict cell — THIS is the cell we write responses to
+    weight: "M"
+    score_formula: "N"            # NEVER write — formula cell
+    weighted_score_formula: "O"   # NEVER write — formula cell
+    average_score_formula: "P"    # NEVER write — formula cell
+    observation: "Q"              # THIS is the cell we write evidence mapping to
+  expected_checkpoint_count: 248
+  # Boundary rows (have formula in N but no checkpoint text in D) are skipped dynamically
+
+transcript:
+  path: "data/Debasis Mohapatra _ L1 Technical Discussion has been scheduled with Calsoft _ Python Automation Testing with Storage Domine 1.docx"
+  # Microsoft Teams DOCX: paragraphs alternate as speaker name / timestamp / text blocks
+  # Pattern 1: standalone speaker name line (e.g. "Project Manager")
+  speaker_only_pattern: '^([A-Z][a-zA-Z .]{2,50})$'
+  # Pattern 2: timestamp line (e.g. "0:14:32" or "00:14:32")
+  timestamp_only_pattern: '^(\d{1,2}:\d{2}:\d{2})$'
+  # Pattern 3: inline "Speaker: text" on same line
+  speaker_inline_pattern: '^([A-Z][a-zA-Z .]+):\s*(.+)$'
+  # Pattern 4: inline "[HH:MM:SS] Speaker: text"
+  timestamp_inline_pattern: '^\[?(\d{1,2}:\d{2}:\d{2})\]?\s*'
+
+retrieval:
+  tfidf_weight: 0.70
+  keyword_weight: 0.30
+  top_k: 2
+  window_radius: 1
+
+groq:
+  default_model: "qwen/qwen3.8-27b"
+  escalation_model: "openai/gpt-oss-120b"
+  escalation_confidence_threshold: 0.35
+  rate_limits:
+    "qwen/qwen3.8-27b":
+      rpm: 30
+      tpm: 6000
+      rpd: 14400
+    "openai/gpt-oss-120b":
+      rpm: 30
+      tpm: 12000
+      rpd: 1000
+  max_batch_retries: 1
+
+verdicts:
+  # These MUST match the template's N-column formula exactly (case-sensitive)
+  valid_values:
+    - "Yes"           # score 5
+    - "Partial"       # score 4
+    - "In Progress"   # score 3
+    - "Not clarified" # score 2 — NOTE: lowercase 'c'
+    - "No"            # score 0
+    - "NA"            # cell left completely untouched — no score
+
+review:
+  flag_confidence_threshold: 0.4
+
+output:
+  dir: "output"

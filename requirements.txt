@@ -1,0 +1,9 @@
+openpyxl
+python-docx
+scikit-learn
+numpy
+groq
+pydantic
+pyyaml
+python-dotenv
+pytest
